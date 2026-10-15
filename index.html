@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#08090d">
+  <title>Destino pendiente</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #08090d;
+      --panel: rgba(18, 20, 28, .78);
+      --line: rgba(255,255,255,.12);
+      --muted: #858a9a;
+      --white: #f5f6fb;
+      --accent: #b9c7ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100svh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      overflow: hidden;
+      color: var(--white);
+      background:
+        radial-gradient(ellipse at 50% 42%, rgba(64, 78, 130, .16), transparent 48%),
+        radial-gradient(ellipse at 80% 10%, rgba(75, 50, 100, .10), transparent 40%),
+        var(--bg);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .13;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.24'/%3E%3C/svg%3E");
+    }
+    main { width: min(760px, 100%); position: relative; text-align: center; }
+    .status {
+      display: inline-flex; align-items: center; gap: 10px;
+      color: var(--muted); font-size: 11px; letter-spacing: .22em;
+      text-transform: uppercase; margin-bottom: 32px;
+    }
+    .dot {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--accent);
+      box-shadow: 0 0 14px rgba(185,199,255,.85);
+      animation: pulse 2s infinite;
+    }
+    h1 {
+      font-size: clamp(28px, 6vw, 54px); line-height: 1.12;
+      letter-spacing: .08em; font-weight: 500; margin: 0 0 16px;
+    }
+    .subtitle { color: #a4a8b7; font-size: clamp(12px, 2vw, 14px); line-height: 1.8; margin: 0 auto; }
+    .rule { width: 72px; height: 1px; background: var(--line); margin: 34px auto; }
+    .timer {
+      display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px; margin: 0 auto; max-width: 640px;
+    }
+    .unit {
+      padding: clamp(14px, 3vw, 24px) 8px;
+      border: 1px solid var(--line); border-radius: 12px;
+      background: linear-gradient(160deg, rgba(255,255,255,.045), rgba(255,255,255,.012));
+      box-shadow: 0 12px 40px rgba(0,0,0,.12);
+    }
+    .number { display: block; font-size: clamp(27px, 6vw, 48px); font-weight: 400; letter-spacing: -.06em; font-variant-numeric: tabular-nums; }
+    .label { display: block; margin-top: 10px; color: var(--muted); font-size: 10px; letter-spacing: .16em; }
+    .date { margin-top: 28px; color: var(--accent); font-size: 12px; letter-spacing: .28em; }
+    footer { margin-top: 54px; color: #565b6a; font-size: 10px; letter-spacing: .12em; }
+    @keyframes pulse { 50% { opacity: .45; box-shadow: 0 0 5px rgba(185,199,255,.3); } }
+    @media (max-width: 420px) {
+      body { padding: 18px; }
+      .timer { gap: 7px; }
+      .label { font-size: 8px; letter-spacing: .08em; }
+      .status { margin-bottom: 26px; font-size: 9px; }
+      footer { margin-top: 42px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; } }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="status"><span class="dot"></span> SEÑAL DETECTADA <span>·</span> DESTINO PENDIENTE</div>
+    <h1>NO ERA UN ERROR.</h1>
+    <p class="subtitle">Hay algo esperando al otro lado.<br>Por ahora, solo queda esperar.</p>
+    <div class="rule"></div>
+    <section class="timer" aria-label="Cuenta regresiva">
+      <div class="unit"><span class="number" id="days">000</span><span class="label">DÍAS</span></div>
+      <div class="unit"><span class="number" id="hours">00</span><span class="label">HORAS</span></div>
+      <div class="unit"><span class="number" id="minutes">00</span><span class="label">MINUTOS</span></div>
+      <div class="unit"><span class="number" id="seconds">00</span><span class="label">SEGUNDOS</span></div>
+    </section>
+    <footer>CONEXIÓN ESTABLE // ESPERA INICIADA</footer>
+  </main>
+  <script>
+    // La cuenta termina al comenzar el 28 de noviembre de 2026 en Perú (UTC-5).
+    const target = new Date("2026-11-28T00:00:00-05:00").getTime();
+    const ids = {
+      days: document.getElementById("days"),
+      hours: document.getElementById("hours"),
+      minutes: document.getElementById("minutes"),
+      seconds: document.getElementById("seconds")
+    };
+    function updateCountdown() {
+      let remaining = Math.max(0, target - Date.now());
+      const day = 86400000, hour = 3600000, minute = 60000;
+      const d = Math.floor(remaining / day); remaining %= day;
+      const h = Math.floor(remaining / hour); remaining %= hour;
+      const m = Math.floor(remaining / minute); remaining %= minute;
+      const s = Math.floor(remaining / 1000);
+      ids.days.textContent = String(d).padStart(3, "0");
+      ids.hours.textContent = String(h).padStart(2, "0");
+      ids.minutes.textContent = String(m).padStart(2, "0");
+      ids.seconds.textContent = String(s).padStart(2, "0");
+      if (target <= Date.now()) {
+        document.querySelector(".subtitle").innerHTML = "El momento ha llegado.<br>La espera terminó.";
+        document.querySelector("footer").textContent = "SEÑAL RECIBIDA // DESTINO ALCANZADO";
+      }
+    }
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+  </script>
+</body>
+</html>
